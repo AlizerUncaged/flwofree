@@ -1,0 +1,235 @@
+﻿<Window x:Class="FlowFree.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AI Neural Rewiring" Height="700" Width="1200"
+        Background="#1E1E1E">
+
+    <Window.Resources>
+        <Style x:Key="GameButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="75" />
+            <Setter Property="Height" Value="75" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Background" Value="#2D2D2D" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0"
+                                CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#40FFFFFF"
+                                                          BlurRadius="15"
+                                                          ShadowDepth="0" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#3D3D3D" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="20,12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0"
+                                CornerRadius="12">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="{TemplateBinding VerticalAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4D4D4D" />
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#40FFFFFF"
+                                                          BlurRadius="10"
+                                                          ShadowDepth="0" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2D2D2D" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Panel -->
+        <Border Background="#252525"
+                CornerRadius="20"
+                Padding="20"
+                Margin="0,0,20,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Neural Pathways"
+                               FontFamily="Segoe UI"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               Foreground="#FFFFFF"
+                               Margin="0,0,0,20" />
+
+                    <TextBlock Text="Reconnect the AI's neural pathways in sequence to restore functionality."
+                               FontFamily="Segoe UI"
+                               FontSize="14"
+                               Foreground="#B0B0B0"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,30" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Margin="0,20">
+                    <TextBlock x:Name="CurrentColorText"
+                               Text="Current Color: Red"
+                               FontFamily="Segoe UI"
+                               FontSize="18"
+                               FontWeight="Medium"
+                               Foreground="#E0E0E0"
+                               Margin="0,0,0,15">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#40FFFFFF"
+                                              BlurRadius="15"
+                                              ShadowDepth="0" />
+                        </TextBlock.Effect>
+                    </TextBlock>
+
+                    <ItemsControl Margin="0,20,0,0">
+                        <ItemsControl.Items>
+                            <Border Background="#2A2A2A"
+                                    CornerRadius="10"
+                                    Padding="15"
+                                    Margin="0,0,0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="20"
+                                             Height="20"
+                                             Fill="#FF4141"
+                                             Margin="0,0,10,0" />
+                                    <TextBlock Text="Red Path"
+                                               Foreground="#E0E0E0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#2A2A2A"
+                                    CornerRadius="10"
+                                    Padding="15"
+                                    Margin="0,0,0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="20"
+                                             Height="20"
+                                             Fill="#FF8C00"
+                                             Margin="0,0,10,0" />
+                                    <TextBlock Text="Orange Path"
+                                               Foreground="#E0E0E0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#2A2A2A"
+                                    CornerRadius="10"
+                                    Padding="15"
+                                    Margin="0,0,0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="20"
+                                             Height="20"
+                                             Fill="#4169FF"
+                                             Margin="0,0,10,0" />
+                                    <TextBlock Text="Blue Path"
+                                               Foreground="#E0E0E0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#2A2A2A"
+                                    CornerRadius="10"
+                                    Padding="15"
+                                    Margin="0,0,0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="20"
+                                             Height="20"
+                                             Fill="#32CD32"
+                                             Margin="0,0,10,0" />
+                                    <TextBlock Text="Green Path"
+                                               Foreground="#E0E0E0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </ItemsControl.Items>
+                    </ItemsControl>
+                </StackPanel>
+
+                <Button Grid.Row="2"
+                        Content="Reset Game"
+                        Click="ResetGame_Click"
+                        Style="{StaticResource ModernButton}"
+                        HorizontalAlignment="Stretch" />
+            </Grid>
+        </Border>
+
+        <!-- Game Grid -->
+        <Border Grid.Column="1"
+                Background="#252525"
+                CornerRadius="20"
+                Padding="30">
+            <Grid x:Name="GameGrid"
+                  Width="420"
+                  Height="420"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <Grid.RenderTransform>
+                    <ScaleTransform x:Name="GameGridScale"
+                                    ScaleX="1"
+                                    ScaleY="1" />
+                </Grid.RenderTransform>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
