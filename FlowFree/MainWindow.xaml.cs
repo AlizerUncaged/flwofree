@@ -26,9 +26,115 @@ public partial class MainWindow : Window
     private bool isDrawing = false;
     private Button? capturedButton = null;
     private System.Windows.Threading.DispatcherTimer mouseTrackTimer;
-    private readonly Border gameAreaBorder; // Reference to the game area border
-    private Point startEndpoint; // Track where we started drawing from
-    private Point targetEndpoint; // Track where we need to connect to
+    private readonly Border gameAreaBorder;
+    private Point startEndpoint;
+
+    private Point targetEndpoint;
+
+    // Define possible endpoint collections based on the grid layouts
+    private readonly List<int[][]> possibleEndpoints = new List<int[][]>
+    {
+        // Layout 1:
+        // 000RG
+        // R0000
+        // 00Y00
+        // 000B0
+        // GBY00
+        new int[][]
+        {
+            new int[] { 0, 3, 1, 0 }, // R endpoints (row,col)
+            new int[] { 0, 4, 4, 0 }, // G endpoints
+            new int[] { 2, 2, 4, 2 }, // Y endpoints
+            new int[] { 3, 3, 4, 1 } // B endpoints
+        },
+
+        // Layout 2:
+        // 000RG
+        // 0YBG0
+        // 00000
+        // 0000B
+        // 00R0Y
+        new int[][]
+        {
+            new int[] { 0, 3, 4, 2 }, // R endpoints
+            new int[] { 0, 4, 1, 2 }, // G endpoints
+            new int[] { 1, 1, 3, 4 }, // Y endpoints
+            new int[] { 1, 2, 4, 4 } // B endpoints
+        },
+
+        // Layout 3:
+        // Y0BRG
+        // 00000
+        // 000G0
+        // 0B00R
+        // 0000Y
+        new int[][]
+        {
+            new int[] { 0, 3, 3, 4 }, // R endpoints
+            new int[] { 0, 4, 2, 3 }, // G endpoints
+            new int[] { 0, 2, 3, 1 }, // B endpoints
+            new int[] { 0, 0, 4, 4 } // Y endpoints
+        },
+
+        // Layout 4:
+        // B00Y0
+        // G0000
+        // Y0GB0
+        // 0R0R0
+        // 00000
+        new int[][]
+        {
+            new int[] { 3, 1, 3, 3 }, // R endpoints
+            new int[] { 1, 0, 2, 2 }, // G endpoints
+            new int[] { 0, 0, 2, 3 }, // B endpoints
+            new int[] { 0, 3, 2, 0 } // Y endpoints
+        },
+
+        // Layout 5:
+        // 000R0
+        // 0YBG0
+        // 00000
+        // BGR00
+        // 0000G
+        new int[][]
+        {
+            new int[] { 0, 3, 3, 2 }, // R endpoints
+            new int[] { 1, 3, 4, 4 }, // G endpoints
+            new int[] { 1, 2, 3, 0 }, // B endpoints
+            new int[] { 1, 1, 3, 1 } // Y endpoints
+        },
+
+        // Layout 6:
+        // 00000
+        // G00R0
+        // BRBY0
+        // 00000
+        // Y000G
+        new int[][]
+        {
+            new int[] { 1, 3, 2, 3 }, // R endpoints
+            new int[] { 1, 0, 4, 4 }, // G endpoints
+            new int[] { 2, 0, 2, 1 }, // B endpoints
+            new int[] { 2, 2, 4, 0 } // Y endpoints
+        },
+
+        // Layout 7:
+        // BYR00
+        // 00000
+        // 0BG00
+        // 00000
+        // GY00R
+        new int[][]
+        {
+            new int[] { 0, 2, 4, 4 }, // R endpoints
+            new int[] { 2, 2, 4, 0 }, // G endpoints
+            new int[] { 0, 0, 2, 1 }, // B endpoints
+            new int[] { 0, 1, 4, 1 } // Y endpoints
+        }
+    };
+
+
+    private int[][] currentEndpoints;
 
     private Color[] colors = new Color[]
     {
@@ -42,6 +148,13 @@ public partial class MainWindow : Window
     private readonly Dictionary<int, List<Point>> completedPaths = new Dictionary<int, List<Point>>();
     private readonly Dictionary<Point, Button> buttonGrid = new Dictionary<Point, Button>();
 
+    // Method to validate if clicked endpoint matches current color
+    private bool ValidateEndpointColor(Point point)
+    {
+        int row = (int)point.X;
+        int col = (int)point.Y;
+        return gameBoard[row, col] == currentColorIndex + 1;
+    }
 
     public MainWindow()
     {
@@ -253,43 +366,18 @@ public partial class MainWindow : Window
         buttonGrid.Clear();
         isDrawing = false;
         capturedButton = null;
-        coloredCells.Clear(); // Clear colored cells tracking
+        coloredCells.Clear();
 
-        int[][] endpoints = new int[][]
-        {
-            new int[] { 0, 3, 1, 0 }, // Red endpoints (R): (0,3) and (1,0)
-            new int[] { 0, 4, 4, 0 }, // Green endpoints (G): (0,4) and (4,0)
-            new int[] { 2, 2, 4, 2 }, // Yellow endpoints (Y): (2,2) and (4,2)
-            new int[] { 3, 3, 4, 1 } // Blue endpoints (B): (3,3) and (4,1)
-        };
-
-        /* The layout matches this exact grid:
-         * 0 0 0 R G    [0,0] [0,1] [0,2] [0,3] [0,4]
-         * R 0 0 0 0    [1,0] [1,1] [1,2] [1,3] [1,4]
-         * 0 0 Y 0 0    [2,0] [2,1] [2,2] [2,3] [2,4]
-         * 0 0 0 B 0    [3,0] [3,1] [3,2] [3,3] [3,4]
-         * G B Y 0 0    [4,0] [4,1] [4,2] [4,3] [4,4]
-         */
-
-        // Initialize the game board with endpoints
-        Array.Clear(gameBoard, 0, gameBoard.Length);
-        for (int i = 0; i < endpoints.Length; i++)
-        {
-            int y1 = endpoints[i][0], x1 = endpoints[i][1]; // First endpoint
-            int y2 = endpoints[i][2], x2 = endpoints[i][3]; // Second endpoint
-            gameBoard[y1, x1] = i + 1;
-            gameBoard[y2, x2] = i + 1;
-        }
-
-        // Update colors array to match the image
-
-        // colorNames = new string[] { "Red", "Green", "Yellow", "Blue" };
+        // Randomly select an endpoint collection
+        Random random = new Random();
+        int layoutIndex = random.Next(possibleEndpoints.Count);
+        currentEndpoints = possibleEndpoints[layoutIndex];
 
         Array.Clear(gameBoard, 0, gameBoard.Length);
-        for (int i = 0; i < endpoints.Length; i++)
+        for (int i = 0; i < currentEndpoints.Length; i++)
         {
-            int r1 = endpoints[i][0], c1 = endpoints[i][1];
-            int r2 = endpoints[i][2], c2 = endpoints[i][3];
+            int r1 = currentEndpoints[i][0], c1 = currentEndpoints[i][1];
+            int r2 = currentEndpoints[i][2], c2 = currentEndpoints[i][3];
             gameBoard[r1, c1] = i + 1;
             gameBoard[r2, c2] = i + 1;
         }
@@ -316,7 +404,6 @@ public partial class MainWindow : Window
                 Grid.SetColumn(button, col);
                 GameGrid.Children.Add(button);
 
-                // If this is an endpoint, color it immediately and add to colored cells
                 if (gameBoard[row, col] != 0)
                 {
                     button.Background = new SolidColorBrush(colors[gameBoard[row, col] - 1]);
@@ -329,15 +416,12 @@ public partial class MainWindow : Window
             }
         }
 
-        // Add a scale animation for game start
         var scaleAnimation = new DoubleAnimation(0.9, 1.0, TimeSpan.FromSeconds(0.3))
         {
             EasingFunction = new ElasticEase { Oscillations = 1 }
         };
         GameGridScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
         GameGridScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
-
-        UpdateStatus();
     }
 
     private void Button_MouseDown(object sender, MouseButtonEventArgs e)
@@ -346,11 +430,20 @@ public partial class MainWindow : Window
         {
             var button = (Button)sender;
             var point = (Point)button.Tag;
-            int row = (int)point.X;
-            int col = (int)point.Y;
 
-            // Only start drawing if we click on an endpoint of the current color
-            if (gameBoard[row, col] == currentColorIndex + 1)
+            // Check if clicked endpoint matches current color
+            if (!ValidateEndpointColor(point) && gameBoard[(int)point.X, (int)point.Y] != 0)
+            {
+                // Wrong color selected - restart game
+                MessageBox.Show("Incorrect sequence! The neural pathway must be connected in the correct order.",
+                    "Sequence Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                InitializeGame();
+                return;
+            }
+
+            if (gameBoard[(int)point.X, (int)point.Y] == currentColorIndex + 1)
             {
                 isDrawing = true;
                 capturedButton = button;
@@ -358,15 +451,12 @@ public partial class MainWindow : Window
                 currentPath.Add(point);
                 lastCell = point;
                 startEndpoint = point;
-
-                // Find the target endpoint
                 FindTargetEndpoint();
 
                 mouseTrackTimer.Start();
-                button.CaptureMouse(); // Ensure mouse capture
+                button.CaptureMouse();
                 e.Handled = true;
 
-                // Add pulse animation on start
                 var scaleTransform = new ScaleTransform(1, 1);
                 button.RenderTransform = scaleTransform;
 
@@ -379,6 +469,7 @@ public partial class MainWindow : Window
             }
         }
     }
+
 
     private void FindTargetEndpoint()
     {
@@ -495,6 +586,7 @@ public partial class MainWindow : Window
 
     private void UpdateStatus()
     {
+        
         if (currentColorIndex < colors.Length)
         {
             var animation = new ColorAnimation(
@@ -503,11 +595,11 @@ public partial class MainWindow : Window
             );
 
             var foregroundBrush = new SolidColorBrush(colors[currentColorIndex]);
-            CurrentColorText.Foreground = foregroundBrush;
+            // CurrentColorText.Foreground = foregroundBrush;
 
             // Animate text size
             var scaleTransform = new ScaleTransform(1, 1);
-            CurrentColorText.RenderTransform = scaleTransform;
+            // CurrentColorText.RenderTransform = scaleTransform;
 
             var pulseAnimation = new DoubleAnimation(1, 1.1, TimeSpan.FromMilliseconds(150))
             {
@@ -517,12 +609,12 @@ public partial class MainWindow : Window
             scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, pulseAnimation);
             scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, pulseAnimation);
 
-            CurrentColorText.Text = $"Current Color: {colorNames[currentColorIndex]}";
+            // CurrentColorText.Text = $"Current Color: {colorNames[currentColorIndex]}";
         }
         else
         {
-            CurrentColorText.Text = "All Paths Connected!";
-            CurrentColorText.Foreground = new SolidColorBrush(Colors.White);
+            // CurrentColorText.Text = "All Paths Connected!";
+            // CurrentColorText.Foreground = new SolidColorBrush(Colors.White);
 
             // Show completion animations
             ShowCompletionAnimation();

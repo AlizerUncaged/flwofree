@@ -88,7 +88,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left Panel -->
-        <Border Background="#252525"
+        <Border Background="#252525" 
                 CornerRadius="20"
                 Padding="20"
                 Margin="0,0,20,0">
@@ -99,15 +99,15 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <StackPanel>
-                    <TextBlock Text="Neural Pathways"
+                <StackPanel >
+                    <TextBlock Text="AURORA Pathways"
                                FontFamily="Segoe UI"
-                               FontSize="24"
+                               FontSize="22"
                                FontWeight="SemiBold"
                                Foreground="#FFFFFF"
                                Margin="0,0,0,20" />
 
-                    <TextBlock Text="Reconnect the AI's neural pathways in sequence to restore functionality."
+                    <TextBlock Text="Reconnect the AURORA's neural pathways in sequence to restore functionality."
                                FontFamily="Segoe UI"
                                FontSize="14"
                                Foreground="#B0B0B0"
@@ -115,7 +115,7 @@
                                Margin="0,0,0,30" />
                 </StackPanel>
 
-                <StackPanel Grid.Row="1" Margin="0,20">
+                <StackPanel Grid.Row="1" Margin="0,20" Visibility="Collapsed">
                     <TextBlock x:Name="CurrentColorText"
                                Text="Current Color: Red"
                                FontFamily="Segoe UI"
