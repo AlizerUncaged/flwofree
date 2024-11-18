@@ -20,14 +20,17 @@ public partial class MainWindow : Window
 {
     private readonly int[,] gameBoard = new int[5, 5];
     private readonly List<Point> currentPath = new List<Point>();
+    private PasswordHackingGame? hackingGame;
     private Point? lastCell = null;
     private int currentColorIndex = 0;
     private bool isDrawing = false;
     private Button? capturedButton = null;
     private System.Windows.Threading.DispatcherTimer mouseTrackTimer;
     private readonly Border gameAreaBorder; // Reference to the game area border
+    private Point startEndpoint; // Track where we started drawing from
+    private Point targetEndpoint; // Track where we need to connect to
 
-    private readonly Color[] colors = new Color[]
+    private Color[] colors = new Color[]
     {
         Color.FromRgb(255, 65, 65), // Red
         Color.FromRgb(255, 140, 0), // Orange
@@ -35,9 +38,10 @@ public partial class MainWindow : Window
         Color.FromRgb(50, 205, 50) // Green
     };
 
-    private readonly string[] colorNames = { "Red", "Orange", "Blue", "Green" };
+    private string[] colorNames = { "Red", "Orange", "Blue", "Green" };
     private readonly Dictionary<int, List<Point>> completedPaths = new Dictionary<int, List<Point>>();
     private readonly Dictionary<Point, Button> buttonGrid = new Dictionary<Point, Button>();
+
 
     public MainWindow()
     {
@@ -62,13 +66,19 @@ public partial class MainWindow : Window
     {
         if (!isDrawing) return;
 
+        // Verify mouse button is still pressed
+        if (Mouse.LeftButton != MouseButtonState.Pressed)
+        {
+            StopDrawing();
+            return;
+        }
+
         // Check if mouse is within the game area border
         Point mousePos = Mouse.GetPosition(gameAreaBorder);
         if (mousePos.X < 0 || mousePos.Y < 0 ||
             mousePos.X > gameAreaBorder.ActualWidth ||
             mousePos.Y > gameAreaBorder.ActualHeight)
         {
-            // Mouse is outside game area
             StopDrawing();
             return;
         }
@@ -88,7 +98,6 @@ public partial class MainWindow : Window
         }
     }
 
-
     private void StopDrawing()
     {
         if (!isDrawing) return;
@@ -103,6 +112,26 @@ public partial class MainWindow : Window
             capturedButton.ReleaseMouseCapture();
             capturedButton = null;
         }
+    }
+
+    private bool IsPathComplete()
+    {
+        if (currentPath.Count < 2) return false;
+
+        var lastPoint = currentPath[currentPath.Count - 1];
+
+        // Check if we've reached the target endpoint
+        if (lastPoint == targetEndpoint)
+        {
+            // Validate that the path connects both endpoints
+            var firstPoint = currentPath[0];
+            if (firstPoint == startEndpoint)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 
@@ -226,15 +255,35 @@ public partial class MainWindow : Window
         capturedButton = null;
         coloredCells.Clear(); // Clear colored cells tracking
 
-        // Create a guaranteed solvable layout with non-interfering paths
         int[][] endpoints = new int[][]
         {
-            new int[] { 0, 0, 4, 0 },     // Red endpoints (vertical on left)
-            new int[] { 0, 4, 4, 4 },     // Orange endpoints (vertical on right)
-            new int[] { 0, 2, 4, 2 },     // Blue endpoints (vertical in middle)
-            new int[] { 2, 1, 2, 3 }      // Green endpoints (horizontal in middle)
+            new int[] { 0, 3, 1, 0 }, // Red endpoints (R): (0,3) and (1,0)
+            new int[] { 0, 4, 4, 0 }, // Green endpoints (G): (0,4) and (4,0)
+            new int[] { 2, 2, 4, 2 }, // Yellow endpoints (Y): (2,2) and (4,2)
+            new int[] { 3, 3, 4, 1 } // Blue endpoints (B): (3,3) and (4,1)
         };
 
+        /* The layout matches this exact grid:
+         * 0 0 0 R G    [0,0] [0,1] [0,2] [0,3] [0,4]
+         * R 0 0 0 0    [1,0] [1,1] [1,2] [1,3] [1,4]
+         * 0 0 Y 0 0    [2,0] [2,1] [2,2] [2,3] [2,4]
+         * 0 0 0 B 0    [3,0] [3,1] [3,2] [3,3] [3,4]
+         * G B Y 0 0    [4,0] [4,1] [4,2] [4,3] [4,4]
+         */
+
+        // Initialize the game board with endpoints
+        Array.Clear(gameBoard, 0, gameBoard.Length);
+        for (int i = 0; i < endpoints.Length; i++)
+        {
+            int y1 = endpoints[i][0], x1 = endpoints[i][1]; // First endpoint
+            int y2 = endpoints[i][2], x2 = endpoints[i][3]; // Second endpoint
+            gameBoard[y1, x1] = i + 1;
+            gameBoard[y2, x2] = i + 1;
+        }
+
+        // Update colors array to match the image
+
+        // colorNames = new string[] { "Red", "Green", "Yellow", "Blue" };
 
         Array.Clear(gameBoard, 0, gameBoard.Length);
         for (int i = 0; i < endpoints.Length; i++)
@@ -308,7 +357,13 @@ public partial class MainWindow : Window
                 currentPath.Clear();
                 currentPath.Add(point);
                 lastCell = point;
+                startEndpoint = point;
+
+                // Find the target endpoint
+                FindTargetEndpoint();
+
                 mouseTrackTimer.Start();
+                button.CaptureMouse(); // Ensure mouse capture
                 e.Handled = true;
 
                 // Add pulse animation on start
@@ -325,6 +380,26 @@ public partial class MainWindow : Window
         }
     }
 
+    private void FindTargetEndpoint()
+    {
+        // Find the other endpoint of the current color
+        for (int row = 0; row < 5; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                if (gameBoard[row, col] == currentColorIndex + 1)
+                {
+                    var point = new Point(row, col);
+                    if (point != startEndpoint)
+                    {
+                        targetEndpoint = point;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     private void Button_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (!isDrawing || capturedButton == null) return;
@@ -333,11 +408,9 @@ public partial class MainWindow : Window
 
         var button = (Button)sender;
         var point = (Point)button.Tag;
-        int row = (int)point.X;
-        int col = (int)point.Y;
 
-        // Check if we've reached the other endpoint
-        if (gameBoard[row, col] == currentColorIndex + 1 && currentPath.Count > 1)
+        // Check if path is complete
+        if (IsPathComplete())
         {
             // Add all path points to colored cells
             foreach (var pathPoint in currentPath)
@@ -353,34 +426,28 @@ public partial class MainWindow : Window
             // Check if game is complete
             if (currentColorIndex >= colors.Length)
             {
-                MessageBox.Show("Congratulations! You've successfully reconnected all neural pathways!", 
-                    "AI Restored", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Information);
+                // Remove the old MessageBox.Show call and replace with CheckGameCompletion
+                CheckGameCompletion();
             }
         }
         else
         {
             // Clear incomplete path
-            foreach (var pathPoint in currentPath)
-            {
-                if (!coloredCells.Contains(pathPoint) && gameBoard[(int)pathPoint.X, (int)pathPoint.Y] == 0)
-                {
-                    var pathButton = buttonGrid[pathPoint];
-                    pathButton.Background = new SolidColorBrush(Color.FromRgb(45, 45, 45));
-                }
-            }
+            ClearCurrentPath();
         }
 
         // Reset state
         currentPath.Clear();
         lastCell = null;
         isDrawing = false;
-        capturedButton = null;
+        if (capturedButton != null)
+        {
+            capturedButton.ReleaseMouseCapture();
+            capturedButton = null;
+        }
+
         e.Handled = true;
     }
-
-
 
     private void ClearCurrentPath()
     {
@@ -397,16 +464,16 @@ public partial class MainWindow : Window
 
     // Add these to your MainWindow.xaml.cs
 
-  
+
     private void ColorButton(Button button, int colorIndex)
     {
         var point = (Point)button.Tag;
-        
+
         // Only color if the cell can be colored
         if (!CanColorCell(point)) return;
 
         var targetColor = colors[colorIndex];
-        
+
         // Create color animation
         var animation = new ColorAnimation(
             targetColor,
@@ -476,5 +543,219 @@ public partial class MainWindow : Window
         // Fade in new game
         var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
         GameGrid.BeginAnimation(OpacityProperty, fadeIn);
+    }
+
+
+    protected override void OnLostMouseCapture(MouseEventArgs e)
+    {
+        base.OnLostMouseCapture(e);
+
+        // If we unexpectedly lose mouse capture, stop drawing
+        if (isDrawing)
+        {
+            StopDrawing();
+        }
+    }
+
+    protected override void OnMouseLeave(MouseEventArgs e)
+    {
+        base.OnMouseLeave(e);
+
+        // If mouse leaves the window, stop drawing
+        if (isDrawing)
+        {
+            StopDrawing();
+        }
+    }
+
+    // Add this method to handle window deactivation
+    protected override void OnDeactivated(EventArgs e)
+    {
+        base.OnDeactivated(e);
+
+        // If window loses focus, stop drawing
+        if (isDrawing)
+        {
+            StopDrawing();
+        }
+    }
+
+    private async void TransitionToPasswordGame()
+    {
+        var mainGrid = (Grid)Content;
+        var leftPanel = mainGrid.Children[0];
+        var gamePanel = mainGrid.Children[1];
+
+        // Create glitch effect canvas
+        var glitchCanvas = new Canvas
+        {
+            ClipToBounds = true,
+            IsHitTestVisible = false
+        };
+        Grid.SetColumnSpan(glitchCanvas, 2);
+        mainGrid.Children.Add(glitchCanvas);
+
+        // Take screenshot of current game state
+        var renderTarget = new RenderTargetBitmap(
+            (int)ActualWidth,
+            (int)ActualHeight,
+            96, 96,
+            PixelFormats.Pbgra32);
+        renderTarget.Render(mainGrid);
+
+        // Create glitch segments
+        var random = new Random();
+        int segments = 20;
+        double segmentHeight = ActualHeight / segments;
+
+        for (int i = 0; i < segments; i++)
+        {
+            var image = new Image
+            {
+                Source = renderTarget,
+                Width = ActualWidth,
+                Height = ActualHeight,
+                Clip = new RectangleGeometry(new Rect(0, i * segmentHeight, ActualWidth, segmentHeight))
+            };
+
+            Canvas.SetTop(image, i * segmentHeight);
+            glitchCanvas.Children.Add(image);
+        }
+
+        // Animate glitch effect
+        var glitchStoryboard = new Storyboard();
+
+        foreach (Image segment in glitchCanvas.Children)
+        {
+            // Horizontal glitch
+            var horizontalAnimation = new DoubleAnimation
+            {
+                From = 0,
+                To = random.Next(-50, 50),
+                Duration = TimeSpan.FromMilliseconds(300),
+                AutoReverse = true,
+                RepeatBehavior = new RepeatBehavior(3)
+            };
+            Storyboard.SetTarget(horizontalAnimation, segment);
+            Storyboard.SetTargetProperty(horizontalAnimation, new PropertyPath(Canvas.LeftProperty));
+            glitchStoryboard.Children.Add(horizontalAnimation);
+
+            // Opacity glitch
+            var opacityAnimation = new DoubleAnimation
+            {
+                From = 1,
+                To = 0.5,
+                Duration = TimeSpan.FromMilliseconds(100),
+                AutoReverse = true,
+                RepeatBehavior = new RepeatBehavior(6)
+            };
+            Storyboard.SetTarget(opacityAnimation, segment);
+            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(OpacityProperty));
+            glitchStoryboard.Children.Add(opacityAnimation);
+        }
+
+        // Play glitch animation
+        glitchStoryboard.Begin();
+
+        // Fade out current game
+        var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(500));
+        leftPanel.BeginAnimation(OpacityProperty, fadeOut);
+        gamePanel.BeginAnimation(OpacityProperty, fadeOut);
+
+        await Task.Delay(800);
+
+        // Remove glitch canvas
+        mainGrid.Children.Remove(glitchCanvas);
+
+        // Create and setup hacking game
+        hackingGame = new PasswordHackingGame();
+        hackingGame.Opacity = 0;
+        hackingGame.GameCompleted += HackingGame_Completed;
+
+        Grid.SetColumnSpan(hackingGame, 2);
+        mainGrid.Children.Add(hackingGame);
+
+        // Create scan line effect
+        var scanLine = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(40, 0, 255, 0)),
+            Height = 2,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Top,
+            IsHitTestVisible = false
+        };
+        Grid.SetColumnSpan(scanLine, 2);
+        mainGrid.Children.Add(scanLine);
+
+        // Animate scan line
+        var scanAnimation = new DoubleAnimation
+        {
+            From = -2,
+            To = ActualHeight,
+            Duration = TimeSpan.FromSeconds(1),
+            EasingFunction = new QuadraticEase()
+        };
+        scanAnimation.Completed += (s, e) => mainGrid.Children.Remove(scanLine);
+        scanLine.BeginAnimation(Canvas.TopProperty, scanAnimation);
+
+        // Fade in hacking game with digital noise effect
+        var random2 = new Random();
+        var noiseAnimation = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(1000))
+        {
+            EasingFunction = new CubicEase()
+        };
+
+        hackingGame.BeginAnimation(OpacityProperty, noiseAnimation);
+    }
+
+    private async void HackingGame_Completed(object? sender, EventArgs e)
+    {
+        // Show final completion message
+        MessageBox.Show("AURORA system successfully restored!\nAll functionality has been recovered.",
+            "System Restored",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+
+        // Optional: Return to initial game state or close application
+        var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(500));
+        fadeOut.Completed += (s, _) =>
+        {
+            if (hackingGame != null)
+            {
+                ((Grid)Content).Children.Remove(hackingGame);
+                hackingGame = null;
+            }
+
+            InitializeGame(); // Reset to initial game state
+        };
+
+        if (hackingGame != null)
+        {
+            hackingGame.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        await Task.Delay(500);
+
+        // Fade in initial game
+        var mainGrid = (Grid)Content;
+        foreach (UIElement element in mainGrid.Children)
+        {
+            element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(500)));
+        }
+    }
+
+    private void CheckGameCompletion()
+    {
+        if (currentColorIndex >= colors.Length)
+        {
+            // Show brief completion message
+            MessageBox.Show("Neural pathways reconnected! Initiating password recovery sequence...",
+                "Phase 1 Complete",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            // Transition to password game
+            TransitionToPasswordGame();
+        }
     }
 }
