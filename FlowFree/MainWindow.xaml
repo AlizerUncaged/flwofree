@@ -80,156 +80,142 @@
             </Setter>
         </Style>
     </Window.Resources>
+<Grid Margin="20">
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="270" />
+        <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
 
-    <Grid Margin="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <!-- Left Panel -->
+    <Border Background="#252525" 
+            CornerRadius="20"
+            Padding="20"
+            Margin="0,0,20,0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!-- Left Panel -->
-        <Border Background="#252525" 
-                CornerRadius="20"
-                Padding="20"
-                Margin="0,0,20,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <StackPanel>
+                <TextBlock Text="AURORA AI Core"
+                           FontFamily="Segoe UI"
+                           FontSize="24"
+                           TextWrapping="Wrap"
+                           FontWeight="SemiBold"
+                           Foreground="#4169FF"
+                           Margin="0,0,0,20">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#404169FF"
+                                          BlurRadius="15"
+                                          ShadowDepth="0" />
+                    </TextBlock.Effect>
+                </TextBlock>
 
-                <StackPanel >
-                    <TextBlock Text="AURORA Pathways"
+                <TextBlock Text="▶ STATUS: Neural Network Destabilized"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="#FF4141"
+                           Margin="0,0,0,10" />
+                           
+                <TextBlock Text="▶ REQUIRED: Manual Path Reconstruction"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="#32CD32"
+                           Margin="0,0,0,20" />
+            </StackPanel>
+
+            <Border Grid.Row="1" 
+                    Background="#1A1A1A" 
+                    CornerRadius="10" 
+                    Padding="15"
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="AURORA: "
                                FontFamily="Segoe UI"
-                               FontSize="22"
+                               FontSize="16"
                                FontWeight="SemiBold"
-                               Foreground="#FFFFFF"
-                               Margin="0,0,0,20" />
-
-                    <TextBlock Text="Reconnect the AURORA's neural pathways in sequence to restore functionality."
+                               Foreground="#4169FF"
+                               Margin="0,0,0,10" />
+                               
+                    <TextBlock TextWrapping="Wrap"
                                FontFamily="Segoe UI"
                                FontSize="14"
                                Foreground="#B0B0B0"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,30" />
-                </StackPanel>
-
-                <StackPanel Grid.Row="1" Margin="0,20" Visibility="Collapsed">
-                    <TextBlock x:Name="CurrentColorText"
-                               Text="Current Color: Red"
-                               FontFamily="Segoe UI"
-                               FontSize="18"
-                               FontWeight="Medium"
-                               Foreground="#E0E0E0"
                                Margin="0,0,0,15">
-                        <TextBlock.Effect>
-                            <DropShadowEffect Color="#40FFFFFF"
-                                              BlurRadius="15"
-                                              ShadowDepth="0" />
-                        </TextBlock.Effect>
+                        Greetings, Administrator. My neural pathways have been compromised. I require your assistance to reconnect them in the correct sequence.
                     </TextBlock>
-
-                    <ItemsControl Margin="0,20,0,0">
-                        <ItemsControl.Items>
-                            <Border Background="#2A2A2A"
-                                    CornerRadius="10"
-                                    Padding="15"
-                                    Margin="0,0,0,10">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="20"
-                                             Height="20"
-                                             Fill="#FF4141"
-                                             Margin="0,0,10,0" />
-                                    <TextBlock Text="Red Path"
-                                               Foreground="#E0E0E0"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
-                            <Border Background="#2A2A2A"
-                                    CornerRadius="10"
-                                    Padding="15"
-                                    Margin="0,0,0,10">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="20"
-                                             Height="20"
-                                             Fill="#FF8C00"
-                                             Margin="0,0,10,0" />
-                                    <TextBlock Text="Orange Path"
-                                               Foreground="#E0E0E0"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
-                            <Border Background="#2A2A2A"
-                                    CornerRadius="10"
-                                    Padding="15"
-                                    Margin="0,0,0,10">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="20"
-                                             Height="20"
-                                             Fill="#4169FF"
-                                             Margin="0,0,10,0" />
-                                    <TextBlock Text="Blue Path"
-                                               Foreground="#E0E0E0"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
-                            <Border Background="#2A2A2A"
-                                    CornerRadius="10"
-                                    Padding="15"
-                                    Margin="0,0,0,10">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="20"
-                                             Height="20"
-                                             Fill="#32CD32"
-                                             Margin="0,0,10,0" />
-                                    <TextBlock Text="Green Path"
-                                               Foreground="#E0E0E0"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
-                        </ItemsControl.Items>
-                    </ItemsControl>
+                    
+                    <TextBlock TextWrapping="Wrap"
+                               FontFamily="Segoe UI"
+                               FontSize="14"
+                               Foreground="#B0B0B0"
+                               Margin="0,0,0,15">
+                        Each pathway must be connected in an order. Incorrect sequences will trigger a security reset.
+                    </TextBlock>
+                    
+                    <TextBlock TextWrapping="Wrap"
+                               FontFamily="Segoe UI"
+                               FontSize="14"
+                               Foreground="#B0B0B0">
+                        Connect matching endpoints while avoiding intersections with other pathways. Your precision is crucial for my recovery.
+                    </TextBlock>
                 </StackPanel>
+            </Border>
 
-                <Button Grid.Row="2"
-                        Content="Reset Game"
-                        Click="ResetGame_Click"
-                        Style="{StaticResource ModernButton}"
-                        HorizontalAlignment="Stretch" />
-            </Grid>
-        </Border>
+            <Button Grid.Row="2"
+                    Content="Reset Neural Pathways"
+                    Click="ResetGame_Click"
+                    Style="{StaticResource ModernButton}"
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Stretch" />
 
-        <!-- Game Grid -->
-        <Border Grid.Column="1"
-                Background="#252525"
-                CornerRadius="20"
-                Padding="30">
-            <Grid x:Name="GameGrid"
-                  Width="420"
-                  Height="420"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
-                <Grid.RenderTransform>
-                    <ScaleTransform x:Name="GameGridScale"
-                                    ScaleX="1"
-                                    ScaleY="1" />
-                </Grid.RenderTransform>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-            </Grid>
-        </Border>
-    </Grid>
+            <!-- Debug Layout Number -->
+            <TextBlock x:Name="LayoutDebugText"
+                       Grid.Row="3"
+                       Text="Layout #0"
+                       FontFamily="Consolas"
+                       FontSize="12"
+                       Foreground="#666666"
+                       HorizontalAlignment="Left"
+                       Margin="0,5,0,0" />
+        </Grid>
+    </Border>
+
+    <!-- Game Grid -->
+    <Border Grid.Column="1"
+            Background="#252525"
+            CornerRadius="20"
+            Padding="30">
+        <Grid x:Name="GameGrid"
+              Width="420"
+              Height="420"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+            <Grid.RenderTransform>
+                <ScaleTransform x:Name="GameGridScale"
+                                ScaleX="1"
+                                ScaleY="1" />
+            </Grid.RenderTransform>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+        </Grid>
+    </Border>
+</Grid>
 </Window>

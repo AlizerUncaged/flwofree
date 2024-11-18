@@ -373,6 +373,7 @@ public partial class MainWindow : Window
         int layoutIndex = random.Next(possibleEndpoints.Count);
         currentEndpoints = possibleEndpoints[layoutIndex];
 
+        LayoutDebugText.Text = $"{layoutIndex+1}";
         Array.Clear(gameBoard, 0, gameBoard.Length);
         for (int i = 0; i < currentEndpoints.Length; i++)
         {
