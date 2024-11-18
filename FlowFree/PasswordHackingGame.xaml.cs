@@ -10,13 +10,13 @@ public partial class PasswordHackingGame : UserControl
 {
     private readonly string[] passwords =
     {
-        "reboot_123",
-        "fixerror404",
-        "restoreai",
-        "code_fix",
-        "patchit99",
-        "debugme1",
-        "key2fix"
+        "debug404",
+        "reboot23",
+        "fixcore",
+        "patch99",
+        "ai_heal",
+        "aurora1",
+        "systemrestore"
     };
 
     private int currentPasswordIndex = 0;
