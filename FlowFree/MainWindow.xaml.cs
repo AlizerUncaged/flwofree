@@ -49,19 +49,18 @@ public partial class MainWindow : Window
         },
 
         // Layout 2:
-        // 000RG
-        // 0YBG0
-        // 00000
-        // 0000B
-        // 00R0Y
+// 000RG
+// 0YBG0
+// 00000
+// 0000B
+// 00R0Y
         new int[][]
         {
-            new int[] { 0, 3, 4, 2 }, // R endpoints
-            new int[] { 0, 4, 1, 2 }, // G endpoints
-            new int[] { 1, 1, 3, 4 }, // Y endpoints
-            new int[] { 1, 2, 4, 4 } // B endpoints
+            new int[] { 0, 3, 4, 2 },     // R endpoints: (0,3) to (4,2)
+            new int[] { 0, 4, 1, 3 },     // G endpoints: (0,4) to (1,3)
+            new int[] { 1, 2, 3, 4 },     // B endpoints: (1,2) to (3,4)
+            new int[] { 1, 1, 4, 4 }      // Y endpoints: (1,1) to (4,4)
         },
-
         // Layout 3:
         // Y0BRG
         // 00000
