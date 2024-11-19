@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 namespace FlowFree;
@@ -185,30 +186,128 @@ public partial class PasswordHackingGame : UserControl
         }
     }
 
-
-    private async void ShowCompletionSequence()
+    private void ShowCompletionSequence()
     {
-        glitchTimer.Stop();
+        //  glitchTimer.Stop();
         AddTerminalLine("All passwords accepted!", "#00FF00");
         AddTerminalLine("Initiating final system restoration...", "#00FFFF");
 
-        await Task.Delay(1000);
-
-        for (int i = 0; i < 5; i++)
+        var gameOverWindow = new Window
         {
-            AddTerminalLine($"{'█'.ToString().PadRight(random.Next(20, 50), '█')}", "#00FF00");
-            await Task.Delay(200);
-        }
+            WindowStyle = WindowStyle.None,
+            WindowState = WindowState.Maximized,
+            Topmost = true,
+            ShowInTaskbar = false,
+            Background = new SolidColorBrush(Color.FromRgb(0, 0, 0))
+        };
 
-        AddTerminalLine("AURORA SYSTEM RESTORED SUCCESSFULLY", "#00FF00");
+        var mainGrid = new Grid();
+        var matrixBg = new MatrixBackground { Opacity = 0.5 };
 
-        await Task.Delay(1500);
-        if (!jumpscareTriggered)
+        var content = new StackPanel
         {
-            jumpscareTriggered = true;
-            PlayJumpscare();
-        }
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
 
-        GameCompleted?.Invoke(this, EventArgs.Empty);
+        var gameOverText = new TextBlock
+        {
+            Text = "GAME OVER",
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 72,
+            Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Effect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(0, 255, 0),
+                BlurRadius = 30,
+                ShadowDepth = 0
+            }
+        };
+
+        var statsPanel = new StackPanel { Margin = new Thickness(0, 30, 0, 0) };
+        var statsText = new TextBlock
+        {
+            Text =
+                $"System Recovery: 100%\nPasswords Cracked: {passwords.Length}\nAttempts: {wrongAttempts + passwords.Length}",
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 24,
+            Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+            TextAlignment = TextAlignment.Center,
+            LineHeight = 36
+        };
+
+        var restartButton = new Button
+        {
+            Content = "START NEW SESSION",
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 20,
+            Margin = new Thickness(0, 50, 0, 0),
+            Padding = new Thickness(20, 10, 20, 10),
+            Background = new SolidColorBrush(Color.FromRgb(0, 50, 0)),
+            Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+            BorderThickness = new Thickness(2),
+            Effect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(0, 255, 0),
+                BlurRadius = 15,
+                ShadowDepth = 0
+            }
+        };
+
+        // Glitch animation for "GAME OVER"
+        var glitchTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(500)
+        };
+
+        glitchTimer.Tick += (s, e) =>
+        {
+            if (random.Next(100) < 30)
+            {
+                var glitch = new DoubleAnimation(1, 0.7, TimeSpan.FromMilliseconds(50))
+                {
+                    AutoReverse = true
+                };
+                gameOverText.BeginAnimation(OpacityProperty, glitch);
+
+                var shake = new DoubleAnimation(-5, 5, TimeSpan.FromMilliseconds(50))
+                {
+                    AutoReverse = true,
+                    RepeatBehavior = new RepeatBehavior(2)
+                };
+                var transform = new TranslateTransform();
+                gameOverText.RenderTransform = transform;
+                transform.BeginAnimation(TranslateTransform.XProperty, shake);
+            }
+        };
+
+        restartButton.Click += (s, e) =>
+        {
+            gameOverWindow.Close();
+            GameCompleted?.Invoke(this, EventArgs.Empty);
+        };
+
+        statsPanel.Children.Add(statsText);
+        content.Children.Add(gameOverText);
+        content.Children.Add(statsPanel);
+        content.Children.Add(restartButton);
+
+        mainGrid.Children.Add(matrixBg);
+        mainGrid.Children.Add(content);
+        gameOverWindow.Content = mainGrid;
+
+        gameOverWindow.Loaded += (s, e) =>
+        {
+            glitchTimer.Start();
+            if (!jumpscareTriggered)
+            {
+                jumpscareTriggered = true;
+                PlayJumpscare();
+            }
+        };
+
+        gameOverWindow.Show();
     }
 }
