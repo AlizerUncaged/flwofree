@@ -10,16 +10,18 @@ public partial class PasswordHackingGame : UserControl
 {
     private readonly string[] passwords =
     {
-        "debug404",
-        "reboot23",
-        "fixcore",
-        "patch99",
+        "neural404",
+        "matrix23",
+        "synccore",
+        "pulse99",
         "ai_heal",
-        "aurora1",
-        "systemrestore"
+        "aurora7",
+        "fullrestore"
     };
 
     private int currentPasswordIndex = 0;
+    private int wrongAttempts = 0;
+    private bool jumpscareTriggered = false;
     private readonly Random random = new Random();
     private DispatcherTimer glitchTimer;
 
@@ -101,9 +103,15 @@ public partial class PasswordHackingGame : UserControl
 
     private void HandleIncorrectPassword(string attempt)
     {
+        wrongAttempts++;
         AddTerminalLine("Access denied. Invalid password.", "#FF0000");
 
-        // Add error animation
+        if (!jumpscareTriggered)
+        {
+            jumpscareTriggered = true;
+            PlayJumpscare();
+        }
+
         var translateTransform = new TranslateTransform();
         PasswordInput.RenderTransform = translateTransform;
 
@@ -125,9 +133,40 @@ public partial class PasswordHackingGame : UserControl
             Text = text,
             Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex)),
             FontFamily = new FontFamily("Consolas"),
+            FontSize = 16,
             Margin = new Thickness(0, 5, 0, 5)
         };
         TerminalOutput.Children.Add(textBlock);
+    }
+
+
+    private void PlayJumpscare()
+    {
+        var window = new Window
+        {
+            WindowStyle = WindowStyle.None,
+            WindowState = WindowState.Maximized,
+            Topmost = true,
+            ShowInTaskbar = false, Background = Brushes.Black
+        };
+
+        var player = new MediaElement
+        {
+            Source = new Uri("face.mp4", UriKind.Relative),
+            LoadedBehavior = MediaState.Manual,
+            UnloadedBehavior = MediaState.Stop,
+            Stretch = Stretch.Uniform, IsMuted = false, Volume = 1
+        };
+
+        player.MediaEnded += (s, e) =>
+        {
+            window.Close();
+            player.Close();
+        };
+
+        window.Content = player;
+        window.Show();
+        player.Play();
     }
 
     private void GlitchTimer_Tick(object? sender, EventArgs e)
@@ -146,14 +185,13 @@ public partial class PasswordHackingGame : UserControl
         }
     }
 
+
     private async void ShowCompletionSequence()
     {
         glitchTimer.Stop();
-
         AddTerminalLine("All passwords accepted!", "#00FF00");
         AddTerminalLine("Initiating final system restoration...", "#00FFFF");
 
-        // Add completion animation
         await Task.Delay(1000);
 
         for (int i = 0; i < 5; i++)
@@ -165,6 +203,12 @@ public partial class PasswordHackingGame : UserControl
         AddTerminalLine("AURORA SYSTEM RESTORED SUCCESSFULLY", "#00FF00");
 
         await Task.Delay(1500);
+        if (!jumpscareTriggered)
+        {
+            jumpscareTriggered = true;
+            PlayJumpscare();
+        }
+
         GameCompleted?.Invoke(this, EventArgs.Empty);
     }
 }

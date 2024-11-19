@@ -1,7 +1,8 @@
 ﻿<Window x:Class="FlowFree.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI Neural Rewiring" Height="700" Width="1200"
+        xmlns:flowFree="clr-namespace:FlowFree"
+        Title="AI Neural Rewiring" Height="700" Width="1200" WindowState="Maximized"
         Background="#1E1E1E">
 
     <Window.Resources>
@@ -80,142 +81,284 @@
             </Setter>
         </Style>
     </Window.Resources>
-<Grid Margin="20">
-    <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="270" />
-        <ColumnDefinition Width="*" />
-    </Grid.ColumnDefinitions>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="270" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-    <!-- Left Panel -->
-    <Border Background="#252525" 
-            CornerRadius="20"
-            Padding="20"
-            Margin="0,0,20,0">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <!-- Left Panel -->
+        <Border Background="#0A0F0A"
+                BorderBrush="#1A3A1A"
+                BorderThickness="1"
+                CornerRadius="20"
+                Padding="20"
+                Margin="0,0,20,0">
+            <Border.Effect>
+                <DropShadowEffect Color="#2032CD32" BlurRadius="20" ShadowDepth="0" />
+            </Border.Effect>
 
-            <StackPanel>
-                <TextBlock Text="AURORA AI Core"
-                           FontFamily="Segoe UI"
-                           FontSize="24"
-                           TextWrapping="Wrap"
-                           FontWeight="SemiBold"
-                           Foreground="#4169FF"
-                           Margin="0,0,0,20">
-                    <TextBlock.Effect>
-                        <DropShadowEffect Color="#404169FF"
-                                          BlurRadius="15"
-                                          ShadowDepth="0" />
-                    </TextBlock.Effect>
-                </TextBlock>
+            <Grid>
+                <Grid.Background>
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,20,20" ViewportUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <GeometryDrawing>
+                                <GeometryDrawing.Geometry>
+                                    <RectangleGeometry Rect="0,0,20,20" />
+                                </GeometryDrawing.Geometry>
+                                <GeometryDrawing.Pen>
+                                    <Pen Brush="#0A3A0A" Thickness="0.5" />
+                                </GeometryDrawing.Pen>
+                            </GeometryDrawing>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Grid.Background>
 
-                <TextBlock Text="▶ STATUS: Neural Network Destabilized"
-                           FontFamily="Consolas"
-                           FontSize="12"
-                           TextWrapping="Wrap"
-                           Foreground="#FF4141"
-                           Margin="0,0,0,10" />
-                           
-                <TextBlock Text="▶ REQUIRED: Manual Path Reconstruction"
-                           FontFamily="Consolas"
-                           FontSize="12"
-                           TextWrapping="Wrap"
-                           Foreground="#32CD32"
-                           Margin="0,0,0,20" />
-            </StackPanel>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <Border Grid.Row="1" 
-                    Background="#1A1A1A" 
-                    CornerRadius="10" 
-                    Padding="15"
-                    Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock Text="AURORA: "
-                               FontFamily="Segoe UI"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               Foreground="#4169FF"
-                               Margin="0,0,0,10" />
-                               
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Segoe UI"
-                               FontSize="14"
-                               Foreground="#B0B0B0"
-                               Margin="0,0,0,15">
-                        Greetings, Administrator. My neural pathways have been compromised. I require your assistance to reconnect them in the correct sequence.
+                <StackPanel x:Name="TitlePanel">
+                    <TextBlock Text="AURORA AI Core"
+                               FontFamily="Consolas"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#00FF00">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#4000FF00" BlurRadius="15" ShadowDepth="0" />
+                        </TextBlock.Effect>
                     </TextBlock>
-                    
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Segoe UI"
-                               FontSize="14"
-                               Foreground="#B0B0B0"
-                               Margin="0,0,0,15">
-                        Each pathway must be connected in an order. Incorrect sequences will trigger a security reset.
+
+                    <TextBlock x:Name="StatusText"
+                               Text="▶ STATUS: Neural Network Destabilized"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="#FF0000"
+                               Margin="0,10,0,5">
+                        <TextBlock.Effect>
+                            <BlurEffect Radius="0.5" />
+                        </TextBlock.Effect>
                     </TextBlock>
-                    
-                    <TextBlock TextWrapping="Wrap"
-                               FontFamily="Segoe UI"
-                               FontSize="14"
-                               Foreground="#B0B0B0">
-                        Connect matching endpoints while avoiding intersections with other pathways. Your precision is crucial for my recovery.
+
+                    <TextBlock x:Name="RequiredText"
+                               Text="▶ REQUIRED: Manual Path Reconstruction"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="#00FF00"
+                               Margin="0,0,0,20">
+                        <TextBlock.Effect>
+                            <BlurEffect Radius="0.5" />
+                        </TextBlock.Effect>
                     </TextBlock>
                 </StackPanel>
-            </Border>
 
-            <Button Grid.Row="2"
-                    Content="Reset Neural Pathways"
-                    Click="ResetGame_Click"
-                    Style="{StaticResource ModernButton}"
-                    Margin="0,0,0,10"
-                    HorizontalAlignment="Stretch" />
+                <Border Grid.Row="1"
+                        Background="#050A05"
+                        BorderBrush="#0A3A0A"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="15"
+                        Margin="0,0,0,20">
+                    <Grid>
+                        <flowFree:MatrixBackground Opacity="0.2" />
 
-            <!-- Debug Layout Number -->
-            <TextBlock x:Name="LayoutDebugText"
-                       Grid.Row="3"
-                       Text="Layout #0"
-                       FontFamily="Consolas"
-                       FontSize="12"
-                       Foreground="#666666"
-                       HorizontalAlignment="Left"
-                       Margin="0,5,0,0" />
-        </Grid>
-    </Border>
+                        <StackPanel x:Name="InstructionsPanel">
+                            <TextBlock Text="AURORA: "
+                                       FontFamily="Consolas"
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       Foreground="#00FF00"
+                                       Margin="0,0,0,10" />
 
-    <!-- Game Grid -->
-    <Border Grid.Column="1"
-            Background="#252525"
-            CornerRadius="20"
-            Padding="30">
-        <Grid x:Name="GameGrid"
-              Width="420"
-              Height="420"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center">
-            <Grid.RenderTransform>
-                <ScaleTransform x:Name="GameGridScale"
-                                ScaleX="1"
-                                ScaleY="1" />
-            </Grid.RenderTransform>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-        </Grid>
-    </Border>
-</Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="Message1"
+                                           TextWrapping="Wrap"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="#00DD00"
+                                           Margin="0,0,0,15"
+                                           Opacity="0" />
+                                <TextBlock x:Name="Cursor1"
+                                           Grid.Column="1"
+                                           Text="█"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="#00FF00"
+                                           Margin="2,0,0,15">
+                                    <TextBlock.Triggers>
+                                        <EventTrigger RoutedEvent="TextBlock.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        From="1" To="0"
+                                                        Duration="0:0:0.5"
+                                                        AutoReverse="True" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </TextBlock.Triggers>
+                                </TextBlock>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="Message2"
+                                           TextWrapping="Wrap"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="#00DD00"
+                                           Margin="0,0,0,15"
+                                           Opacity="0" />
+                                <TextBlock x:Name="Cursor2"
+                                           Grid.Column="1"
+                                           Text="█"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="#00FF00"
+                                           Margin="2,0,0,15">
+                                    <TextBlock.Triggers>
+                                        <EventTrigger RoutedEvent="TextBlock.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        From="1" To="0"
+                                                        Duration="0:0:0.5"
+                                                        AutoReverse="True" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </TextBlock.Triggers>
+                                </TextBlock>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="Message3"
+                                           TextWrapping="Wrap"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="#00DD00"
+                                           Opacity="0" />
+                                <TextBlock x:Name="Cursor3"
+                                           Grid.Column="1"
+                                           Text="█"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="#00FF00"
+                                           Margin="2,0,0,0">
+                                    <TextBlock.Triggers>
+                                        <EventTrigger RoutedEvent="TextBlock.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="Opacity"
+                                                        From="1" To="0"
+                                                        Duration="0:0:0.5"
+                                                        AutoReverse="True" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </TextBlock.Triggers>
+                                </TextBlock>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Button Grid.Row="2"
+                        Content="Reset Neural Pathways"
+                        Click="ResetGame_Click"
+                        Style="{StaticResource ModernButton}"
+                        Background="#0A2A0A"
+                        Foreground="#00FF00"
+                        Margin="0,0,0,10">
+                    <Button.Effect>
+                        <DropShadowEffect Color="#4000FF00" BlurRadius="10" ShadowDepth="0" />
+                    </Button.Effect>
+                </Button>
+
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="LayoutDebugText"
+                               Grid.Column="0"
+                               Text="Layout #0"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="#006600"
+                               Margin="0,5,0,0" />
+
+                    <TextBlock x:Name="CoordinatesText"
+                               Grid.Column="1"
+                               Text=""
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="#00FF00"
+                               TextAlignment="Right"
+                               Margin="0,5,0,0" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Game Grid -->
+        <Border Grid.Column="1"
+                Background="#0A0F0A"
+                BorderBrush="#1A3A1A"
+                BorderThickness="1"
+                CornerRadius="20"
+                Padding="30">
+            <Border.Effect>
+                <DropShadowEffect Color="#2000FF00" BlurRadius="20" ShadowDepth="0" />
+            </Border.Effect>
+
+            <Grid>
+                <flowFree:MatrixBackground Opacity="0.6" />
+
+                <Grid x:Name="GameGrid"
+                      Width="420"
+                      Height="420"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+                    <Grid.RenderTransform>
+                        <ScaleTransform x:Name="GameGridScale"
+                                        ScaleX="1"
+                                        ScaleY="1" />
+                    </Grid.RenderTransform>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

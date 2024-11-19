@@ -7,9 +7,11 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace FlowFree;
 
@@ -42,10 +44,10 @@ public partial class MainWindow : Window
         // GBY00
         new int[][]
         {
-            new int[] { 0, 3, 1, 0 }, // R endpoints (row,col)
+            new int[] { 3, 3, 4, 1 }, // B endpoints
             new int[] { 0, 4, 4, 0 }, // G endpoints
+            new int[] { 0, 3, 1, 0 }, // R endpoints (row,col)
             new int[] { 2, 2, 4, 2 }, // Y endpoints
-            new int[] { 3, 3, 4, 1 } // B endpoints
         },
 
         // Layout 2:
@@ -56,10 +58,10 @@ public partial class MainWindow : Window
 // 00R0Y
         new int[][]
         {
-            new int[] { 0, 3, 4, 2 },     // R endpoints: (0,3) to (4,2)
-            new int[] { 0, 4, 1, 3 },     // G endpoints: (0,4) to (1,3)
-            new int[] { 1, 2, 3, 4 },     // B endpoints: (1,2) to (3,4)
-            new int[] { 1, 1, 4, 4 }      // Y endpoints: (1,1) to (4,4)
+            new int[] { 1, 2, 3, 4 }, // B endpoints: (1,2) to (3,4)
+            new int[] { 0, 4, 1, 3 }, // G endpoints: (0,4) to (1,3)
+            new int[] { 0, 3, 4, 2 }, // R endpoints: (0,3) to (4,2)
+            new int[] { 1, 1, 4, 4 } // Y endpoints: (1,1) to (4,4)
         },
         // Layout 3:
         // Y0BRG
@@ -69,9 +71,9 @@ public partial class MainWindow : Window
         // 0000Y
         new int[][]
         {
-            new int[] { 0, 3, 3, 4 }, // R endpoints
-            new int[] { 0, 4, 2, 3 }, // G endpoints
             new int[] { 0, 2, 3, 1 }, // B endpoints
+            new int[] { 0, 4, 2, 3 }, // G endpoints
+            new int[] { 0, 3, 3, 4 }, // R endpoints
             new int[] { 0, 0, 4, 4 } // Y endpoints
         },
 
@@ -83,9 +85,9 @@ public partial class MainWindow : Window
         // 00000
         new int[][]
         {
-            new int[] { 3, 1, 3, 3 }, // R endpoints
-            new int[] { 1, 0, 2, 2 }, // G endpoints
             new int[] { 0, 0, 2, 3 }, // B endpoints
+            new int[] { 1, 0, 2, 2 }, // G endpoints
+            new int[] { 3, 1, 3, 3 }, // R endpoints
             new int[] { 0, 3, 2, 0 } // Y endpoints
         },
 
@@ -94,14 +96,14 @@ public partial class MainWindow : Window
         // 0YBG0
         // 00000
         // BGR00
-        // 0000G
-        new int[][]
-        {
-            new int[] { 0, 3, 3, 2 }, // R endpoints
-            new int[] { 1, 3, 4, 4 }, // G endpoints
-            new int[] { 1, 2, 3, 0 }, // B endpoints
-            new int[] { 1, 1, 3, 1 } // Y endpoints
-        },
+        // 0000G // unwinnable
+        // new int[][]
+        // {
+        //     new int[] { 1, 2, 3, 0 }, // B endpoints
+        //     new int[] { 1, 3, 4, 4 }, // G endpoints
+        //     new int[] { 0, 3, 3, 2 }, // R endpoints
+        //     new int[] { 1, 1, 3, 1 } // Y endpoints
+        // },
 
         // Layout 6:
         // 00000
@@ -111,9 +113,9 @@ public partial class MainWindow : Window
         // Y000G
         new int[][]
         {
-            new int[] { 1, 3, 2, 3 }, // R endpoints
-            new int[] { 1, 0, 4, 4 }, // G endpoints
             new int[] { 2, 0, 2, 1 }, // B endpoints
+            new int[] { 1, 0, 4, 4 }, // G endpoints
+            new int[] { 1, 3, 2, 3 }, // R endpoints
             new int[] { 2, 2, 4, 0 } // Y endpoints
         },
 
@@ -125,9 +127,9 @@ public partial class MainWindow : Window
         // GY00R
         new int[][]
         {
-            new int[] { 0, 2, 4, 4 }, // R endpoints
-            new int[] { 2, 2, 4, 0 }, // G endpoints
             new int[] { 0, 0, 2, 1 }, // B endpoints
+            new int[] { 2, 2, 4, 0 }, // G endpoints
+            new int[] { 0, 2, 4, 4 }, // R endpoints
             new int[] { 0, 1, 4, 1 } // Y endpoints
         }
     };
@@ -137,15 +139,18 @@ public partial class MainWindow : Window
 
     private Color[] colors = new Color[]
     {
-        Color.FromRgb(255, 65, 65), // Red
-        Color.FromRgb(255, 140, 0), // Orange
         Color.FromRgb(65, 105, 255), // Blue
-        Color.FromRgb(50, 205, 50) // Green
+        Color.FromRgb(50, 205, 50), // Green
+        Color.FromRgb(255, 65, 65), // Red
+        Color.FromRgb(255, 215, 0) // Yellow
     };
 
-    private string[] colorNames = { "Red", "Orange", "Blue", "Green" };
+    private string[] colorNames = { "Blue", "Green", "Red", "Yellow" };
     private readonly Dictionary<int, List<Point>> completedPaths = new Dictionary<int, List<Point>>();
     private readonly Dictionary<Point, Button> buttonGrid = new Dictionary<Point, Button>();
+
+    private readonly List<Button> highlightedButtons = new List<Button>();
+    private readonly Dictionary<Point, ScaleTransform> endpointTransforms = new Dictionary<Point, ScaleTransform>();
 
     // Method to validate if clicked endpoint matches current color
     private bool ValidateEndpointColor(Point point)
@@ -165,13 +170,118 @@ public partial class MainWindow : Window
         InitializeMouseTracker();
         InitializeGame();
         UpdateStatus();
+        KeyDown += (s, e) =>
+        {
+            if (e.Key == Key.F11)
+            {
+                if (WindowStyle == WindowStyle.None && WindowState == WindowState.Maximized)
+                {
+                    WindowStyle = WindowStyle.SingleBorderWindow;
+                    WindowState = WindowState.Normal;
+                    ResizeMode = ResizeMode.CanResize;
+                    Topmost = false;
+                }
+                else
+                {
+                    ResizeMode = ResizeMode.NoResize;
+                    Topmost = true;
+
+                    WindowStyle = WindowStyle.None;
+
+                    WindowState = WindowState.Maximized;
+
+                    Activate();
+                }
+            }
+        };
+    }
+
+    private void HighlightPossibleMoves(Point currentPos)
+    {
+        ClearHighlights();
+
+        int row = (int)currentPos.X;
+        int col = (int)currentPos.Y;
+
+        // Check all four directions
+        Point[] directions = new[]
+        {
+            new Point(row - 1, col), // Up
+            new Point(row + 1, col), // Down
+            new Point(row, col - 1), // Left
+            new Point(row, col + 1) // Right
+        };
+
+        foreach (var point in directions)
+        {
+            if (point.X >= 0 && point.X < 5 && point.Y >= 0 && point.Y < 5)
+            {
+                if (buttonGrid.TryGetValue(point, out Button? button))
+                {
+                    // Only highlight if cell is empty or is target endpoint
+                    if (gameBoard[(int)point.X, (int)point.Y] == 0 ||
+                        gameBoard[(int)point.X, (int)point.Y] == currentColorIndex + 1)
+                    {
+                        button.Effect = new DropShadowEffect
+                        {
+                            Color = colors[currentColorIndex],
+                            BlurRadius = 15,
+                            ShadowDepth = 0,
+                            Opacity = 0.5
+                        };
+                        highlightedButtons.Add(button);
+                    }
+                }
+            }
+        }
+    }
+
+    private void ClearHighlights()
+    {
+        foreach (var button in highlightedButtons)
+        {
+            button.Effect = null;
+        }
+
+        highlightedButtons.Clear();
+    }
+
+    private void AnimateEndpointConnection(Point endpoint1, Point endpoint2)
+    {
+        foreach (var point in new[] { endpoint1, endpoint2 })
+        {
+            if (buttonGrid.TryGetValue(point, out Button? button))
+            {
+                // Create bounce animation
+                var scaleTransform = new ScaleTransform(1, 1);
+                button.RenderTransform = scaleTransform;
+                endpointTransforms[point] = scaleTransform;
+
+                var bounceAnimation = new DoubleAnimation(1, 1.2, TimeSpan.FromMilliseconds(400))
+                {
+                    AutoReverse = true,
+                    RepeatBehavior = new RepeatBehavior(2),
+                    EasingFunction = new ElasticEase { Oscillations = 2 }
+                };
+
+                bounceAnimation.Completed += (s, e) =>
+                {
+                    // Fade opacity after bounce
+                    var fadeAnimation = new DoubleAnimation(1, 0.6, TimeSpan.FromMilliseconds(300));
+                    button.BeginAnimation(OpacityProperty, fadeAnimation);
+                };
+
+                scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, bounceAnimation);
+                scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, bounceAnimation);
+            }
+        }
     }
 
     private void InitializeMouseTracker()
     {
         mouseTrackTimer = new System.Windows.Threading.DispatcherTimer();
         mouseTrackTimer.Tick += MouseTrackTimer_Tick;
-        mouseTrackTimer.Interval = TimeSpan.FromMilliseconds(40); // ~60fps
+        mouseTrackTimer.Interval = TimeSpan.FromMilliseconds(16); // ~60fps
     }
 
     private void MouseTrackTimer_Tick(object? sender, EventArgs e)
@@ -239,6 +349,7 @@ public partial class MainWindow : Window
             var firstPoint = currentPath[0];
             if (firstPoint == startEndpoint)
             {
+                AnimateEndpointConnection(startEndpoint, targetEndpoint);
                 return true;
             }
         }
@@ -335,6 +446,8 @@ public partial class MainWindow : Window
                     {
                         ColorButton(button, currentColorIndex);
                     }
+
+                    HighlightPossibleMoves(point);
                 }
             }
         }
@@ -372,7 +485,7 @@ public partial class MainWindow : Window
         int layoutIndex = random.Next(possibleEndpoints.Count);
         currentEndpoints = possibleEndpoints[layoutIndex];
 
-        LayoutDebugText.Text = $"{layoutIndex+1}";
+        LayoutDebugText.Text = $"{layoutIndex + 1}";
         Array.Clear(gameBoard, 0, gameBoard.Length);
         for (int i = 0; i < currentEndpoints.Length; i++)
         {
@@ -422,7 +535,73 @@ public partial class MainWindow : Window
         };
         GameGridScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
         GameGridScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
+
+        GameGrid.MouseMove += (s, e) =>
+        {
+            var pos = e.GetPosition(GameGrid);
+            var col = (int)(pos.X / (GameGrid.ActualWidth / 5));
+            var row = (int)(pos.Y / (GameGrid.ActualHeight / 5));
+
+            if (row >= 0 && row < 5 && col >= 0 && col < 5)
+            {
+                CoordinatesText.Text = $"X:{col} Y:{row}";
+            }
+        };
+
+        GameGrid.MouseLeave += (s, e) => CoordinatesText.Text = "";
+
+        InitializeTypewriterEffect();
     }
+
+    private void InitializeTypewriterEffect()
+    {
+        string[] messages =
+        {
+            "Greetings, Administrator. My neural pathways have been compromised. I require your assistance to reconnect them in the correct sequence.",
+            "Each pathway must be connected in an order. Incorrect sequences will trigger a security reset.",
+            "Connect matching endpoints while avoiding intersections with other pathways. Your precision is crucial for my recovery."
+        };
+
+        TextBlock[] textBlocks = { Message1, Message2, Message3 };
+        TextBlock[] cursors = { Cursor1, Cursor2, Cursor3 };
+
+        for (int i = 0; i < messages.Length; i++)
+        {
+            var textBlock = textBlocks[i];
+            var cursor = cursors[i];
+            var message = messages[i];
+            var delay = i * 1500; // Delay between messages
+
+            cursor.Visibility = Visibility.Collapsed;
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            var charIndex = 0;
+
+            timer.Tick += (s, e) =>
+            {
+                if (charIndex == 0)
+                {
+                    textBlock.Opacity = 1;
+                    cursor.Visibility = Visibility.Visible;
+                }
+
+                if (charIndex < message.Length)
+                {
+                    textBlock.Text = message.Substring(0, charIndex + 1);
+                    charIndex++;
+                }
+                else
+                {
+                    timer.Stop();
+                    // Keep cursor blinking after text is complete
+                }
+            };
+
+            Dispatcher.BeginInvoke(() => timer.Start(), DispatcherPriority.ApplicationIdle)
+                .Wait(TimeSpan.FromMilliseconds(delay));
+        }
+    }
+
 
     private void Button_MouseDown(object sender, MouseButtonEventArgs e)
     {
@@ -443,6 +622,7 @@ public partial class MainWindow : Window
                 return;
             }
 
+
             if (gameBoard[(int)point.X, (int)point.Y] == currentColorIndex + 1)
             {
                 isDrawing = true;
@@ -452,6 +632,8 @@ public partial class MainWindow : Window
                 lastCell = point;
                 startEndpoint = point;
                 FindTargetEndpoint();
+
+                HighlightPossibleMoves(point);
 
                 mouseTrackTimer.Start();
                 button.CaptureMouse();
@@ -586,7 +768,6 @@ public partial class MainWindow : Window
 
     private void UpdateStatus()
     {
-        
         if (currentColorIndex < colors.Length)
         {
             var animation = new ColorAnimation(
@@ -672,32 +853,22 @@ public partial class MainWindow : Window
         }
     }
 
+
     private async void TransitionToPasswordGame()
     {
         var mainGrid = (Grid)Content;
         var leftPanel = mainGrid.Children[0];
         var gamePanel = mainGrid.Children[1];
 
-        // Create glitch effect canvas
-        var glitchCanvas = new Canvas
-        {
-            ClipToBounds = true,
-            IsHitTestVisible = false
-        };
+        var glitchCanvas = new Canvas { ClipToBounds = true, IsHitTestVisible = false };
         Grid.SetColumnSpan(glitchCanvas, 2);
         mainGrid.Children.Add(glitchCanvas);
 
-        // Take screenshot of current game state
-        var renderTarget = new RenderTargetBitmap(
-            (int)ActualWidth,
-            (int)ActualHeight,
-            96, 96,
-            PixelFormats.Pbgra32);
+        var renderTarget = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
         renderTarget.Render(mainGrid);
 
-        // Create glitch segments
         var random = new Random();
-        int segments = 20;
+        int segments = 30;
         double segmentHeight = ActualHeight / segments;
 
         for (int i = 0; i < segments; i++)
@@ -709,94 +880,111 @@ public partial class MainWindow : Window
                 Height = ActualHeight,
                 Clip = new RectangleGeometry(new Rect(0, i * segmentHeight, ActualWidth, segmentHeight))
             };
-
             Canvas.SetTop(image, i * segmentHeight);
             glitchCanvas.Children.Add(image);
         }
 
-        // Animate glitch effect
+        // Create longer glitch animation
         var glitchStoryboard = new Storyboard();
-
         foreach (Image segment in glitchCanvas.Children)
         {
-            // Horizontal glitch
-            var horizontalAnimation = new DoubleAnimation
+            // Multiple horizontal glitches over 2 seconds
+            for (int i = 0; i < 8; i++) // Increased repetitions
             {
-                From = 0,
-                To = random.Next(-50, 50),
-                Duration = TimeSpan.FromMilliseconds(300),
-                AutoReverse = true,
-                RepeatBehavior = new RepeatBehavior(3)
-            };
-            Storyboard.SetTarget(horizontalAnimation, segment);
-            Storyboard.SetTargetProperty(horizontalAnimation, new PropertyPath(Canvas.LeftProperty));
-            glitchStoryboard.Children.Add(horizontalAnimation);
+                var horizontalAnimation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = random.Next(-100, 100),
+                    Duration = TimeSpan.FromMilliseconds(100),
+                    AutoReverse = true,
+                    BeginTime = TimeSpan.FromMilliseconds(i * 250), // Spread over 2 seconds
+                    EasingFunction = new BounceEase { Bounces = 2, Bounciness = 4 }
+                };
+                Storyboard.SetTarget(horizontalAnimation, segment);
+                Storyboard.SetTargetProperty(horizontalAnimation, new PropertyPath(Canvas.LeftProperty));
+                glitchStoryboard.Children.Add(horizontalAnimation);
+            }
 
-            // Opacity glitch
-            var opacityAnimation = new DoubleAnimation
+            // Multiple vertical displacements
+            for (int i = 0; i < 10; i++)
             {
-                From = 1,
-                To = 0.5,
-                Duration = TimeSpan.FromMilliseconds(100),
-                AutoReverse = true,
-                RepeatBehavior = new RepeatBehavior(6)
-            };
-            Storyboard.SetTarget(opacityAnimation, segment);
-            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(OpacityProperty));
-            glitchStoryboard.Children.Add(opacityAnimation);
+                var verticalAnimation = new DoubleAnimation
+                {
+                    From = Canvas.GetTop(segment),
+                    To = Canvas.GetTop(segment) + random.Next(-20, 20),
+                    Duration = TimeSpan.FromMilliseconds(80),
+                    AutoReverse = true,
+                    BeginTime = TimeSpan.FromMilliseconds(i * 200)
+                };
+                Storyboard.SetTarget(verticalAnimation, segment);
+                Storyboard.SetTargetProperty(verticalAnimation, new PropertyPath(Canvas.TopProperty));
+                glitchStoryboard.Children.Add(verticalAnimation);
+            }
+
+            // Multiple opacity glitches
+            for (int i = 0; i < 12; i++)
+            {
+                var opacityAnimation = new DoubleAnimation
+                {
+                    From = 1,
+                    To = random.NextDouble() * 0.7,
+                    Duration = TimeSpan.FromMilliseconds(50),
+                    AutoReverse = true,
+                    BeginTime = TimeSpan.FromMilliseconds(i * 166) // Spread evenly over 2 seconds
+                };
+                Storyboard.SetTarget(opacityAnimation, segment);
+                Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(OpacityProperty));
+                glitchStoryboard.Children.Add(opacityAnimation);
+            }
         }
 
-        // Play glitch animation
         glitchStoryboard.Begin();
 
-        // Fade out current game
+        // Slower fade out
         var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(500));
         leftPanel.BeginAnimation(OpacityProperty, fadeOut);
         gamePanel.BeginAnimation(OpacityProperty, fadeOut);
 
-        await Task.Delay(800);
+        await Task.Delay(800); // Wait for full glitch animation
 
-        // Remove glitch canvas
         mainGrid.Children.Remove(glitchCanvas);
 
-        // Create and setup hacking game
         hackingGame = new PasswordHackingGame();
         hackingGame.Opacity = 0;
         hackingGame.GameCompleted += HackingGame_Completed;
-
         Grid.SetColumnSpan(hackingGame, 2);
         mainGrid.Children.Add(hackingGame);
 
-        // Create scan line effect
-        var scanLine = new Border
+        // Multiple scan lines spread over final transition
+        for (int i = 0; i < 5; i++) // Increased number of scan lines
         {
-            Background = new SolidColorBrush(Color.FromArgb(40, 0, 255, 0)),
-            Height = 2,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Top,
-            IsHitTestVisible = false
-        };
-        Grid.SetColumnSpan(scanLine, 2);
-        mainGrid.Children.Add(scanLine);
+            var scanLine = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(60, 0, 255, 0)),
+                Height = 3,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Top,
+                IsHitTestVisible = false
+            };
+            Grid.SetColumnSpan(scanLine, 2);
+            mainGrid.Children.Add(scanLine);
 
-        // Animate scan line
-        var scanAnimation = new DoubleAnimation
+            var scanAnimation = new DoubleAnimation
+            {
+                From = -2,
+                To = ActualHeight,
+                Duration = TimeSpan.FromMilliseconds(400),
+                BeginTime = TimeSpan.FromMilliseconds(i * 150)
+            };
+            scanAnimation.Completed += (s, e) => mainGrid.Children.Remove(scanLine);
+            scanLine.BeginAnimation(Canvas.TopProperty, scanAnimation);
+        }
+
+        // Quick snap into view
+        var noiseAnimation = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300))
         {
-            From = -2,
-            To = ActualHeight,
-            Duration = TimeSpan.FromSeconds(1),
-            EasingFunction = new QuadraticEase()
+            EasingFunction = new BackEase { Amplitude = 0.3 }
         };
-        scanAnimation.Completed += (s, e) => mainGrid.Children.Remove(scanLine);
-        scanLine.BeginAnimation(Canvas.TopProperty, scanAnimation);
-
-        // Fade in hacking game with digital noise effect
-        var random2 = new Random();
-        var noiseAnimation = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(1000))
-        {
-            EasingFunction = new CubicEase()
-        };
-
         hackingGame.BeginAnimation(OpacityProperty, noiseAnimation);
     }
 
