@@ -26,6 +26,8 @@ public partial class PasswordHackingGame : UserControl
     private readonly Random random = new Random();
     private DispatcherTimer glitchTimer;
 
+    private bool hasJumpscareOccurred = false;
+
     public event EventHandler? GameCompleted;
 
     public PasswordHackingGame()
@@ -107,9 +109,10 @@ public partial class PasswordHackingGame : UserControl
         wrongAttempts++;
         AddTerminalLine("Access denied. Invalid password.", "#FF0000");
 
-        if (!jumpscareTriggered)
+
+        if (!hasJumpscareOccurred)
         {
-            jumpscareTriggered = true;
+            hasJumpscareOccurred = true;
             PlayJumpscare();
         }
 
@@ -301,9 +304,9 @@ public partial class PasswordHackingGame : UserControl
         gameOverWindow.Loaded += (s, e) =>
         {
             glitchTimer.Start();
-            if (!jumpscareTriggered)
+            if (!hasJumpscareOccurred)
             {
-                jumpscareTriggered = true;
+                hasJumpscareOccurred = true;
                 PlayJumpscare();
             }
         };
