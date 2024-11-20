@@ -14,10 +14,10 @@ public partial class PasswordHackingGame : UserControl
         "neuro505",
         "cyber32",
         "syncnode",
-        "vibe77",
+        "ence4",
         "ai_repair",
         "lumin8",
-        "re_heal"
+        "reheal"
     };
 
     private int currentPasswordIndex = 0;
