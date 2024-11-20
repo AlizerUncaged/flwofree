@@ -212,7 +212,7 @@ public partial class PasswordHackingGame : UserControl
 
         var gameOverText = new TextBlock
         {
-            Text = "GAME OVER",
+            Text = "SYSTEM RESTORED SUCCESSFULLY",
             FontFamily = new FontFamily("Consolas"),
             FontSize = 72,
             Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
