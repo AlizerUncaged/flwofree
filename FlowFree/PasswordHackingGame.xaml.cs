@@ -143,33 +143,46 @@ public partial class PasswordHackingGame : UserControl
         TerminalOutput.Children.Add(textBlock);
     }
 
-
-    private void PlayJumpscare()
+    Window jumpscareWindow = new Window
     {
-        var window = new Window
-        {
-            WindowStyle = WindowStyle.None,
-            WindowState = WindowState.Maximized,
-            Topmost = true,
-            ShowInTaskbar = false, Background = Brushes.Black
-        };
-
-        var player = new MediaElement
+        WindowStyle = WindowStyle.None,
+        WindowState = WindowState.Maximized,
+        ShowInTaskbar = false, Background = Brushes.Black,
+        Content = new MediaElement
         {
             Source = new Uri("face.mp4", UriKind.Relative),
             LoadedBehavior = MediaState.Manual,
             UnloadedBehavior = MediaState.Stop,
             Stretch = Stretch.Uniform, IsMuted = false, Volume = 1
-        };
+        }
+    };
 
+
+    private void PlayJumpscare()
+    {
+        jumpscareWindow.Visibility = Visibility.Visible;
+        
+        var player = jumpscareWindow.Content as MediaElement;
+
+        player.Volume = 1;
+        player.Position = TimeSpan.FromMilliseconds(1);
         player.MediaEnded += (s, e) =>
         {
-            window.Close();
+            jumpscareWindow.Close();
             player.Close();
         };
+        jumpscareWindow.WindowState = WindowState.Maximized;
+        jumpscareWindow.Topmost = true;
+        jumpscareWindow.Opacity = 1;
+        jumpscareWindow.Show();
+        
+        player.Play();
+    }
 
-        window.Content = player;
-        window.Show();
+    private void PreloadJumpscare()
+    {
+        var player = jumpscareWindow.Content as MediaElement;
+        player.Volume = 0;
         player.Play();
     }
 
@@ -189,13 +202,18 @@ public partial class PasswordHackingGame : UserControl
         }
     }
 
+
     private void ShowCompletionSequence()
     {
         //  glitchTimer.Stop();
         AddTerminalLine("All passwords accepted!", "#00FF00");
         AddTerminalLine("Initiating final system restoration...", "#00FFFF");
 
-        var gameOverWindow = new Window
+
+        var mainGrid = new Grid();
+        var matrixBg = new MatrixBackground { Opacity = 0.5 };
+
+        Window gameOverWindow = new Window
         {
             WindowStyle = WindowStyle.None,
             WindowState = WindowState.Maximized,
@@ -203,10 +221,6 @@ public partial class PasswordHackingGame : UserControl
             ShowInTaskbar = false,
             Background = new SolidColorBrush(Color.FromRgb(0, 0, 0))
         };
-
-        var mainGrid = new Grid();
-        var matrixBg = new MatrixBackground { Opacity = 0.5 };
-
         var content = new StackPanel
         {
             VerticalAlignment = VerticalAlignment.Center,
@@ -312,5 +326,16 @@ public partial class PasswordHackingGame : UserControl
         };
 
         gameOverWindow.Show();
+    }
+
+    private void PasswordHackingGame_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        jumpscareWindow.Opacity = 0;
+        jumpscareWindow.WindowState = WindowState.Minimized;
+        jumpscareWindow.WindowStyle = WindowStyle.None;
+        jumpscareWindow.Visibility = Visibility.Hidden;
+        jumpscareWindow.Show();
+
+        PreloadJumpscare();
     }
 }
