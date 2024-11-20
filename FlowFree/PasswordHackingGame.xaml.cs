@@ -11,13 +11,13 @@ public partial class PasswordHackingGame : UserControl
 {
     private readonly string[] passwords =
     {
-        "neural404",
-        "matrix23",
-        "synccore",
-        "pulse99",
-        "ai_heal",
-        "aurora7",
-        "fullrestore"
+        "neuro505",
+        "cyber32",
+        "syncnode",
+        "vibe77",
+        "ai_repair",
+        "lumin8",
+        "re_heal"
     };
 
     private int currentPasswordIndex = 0;
