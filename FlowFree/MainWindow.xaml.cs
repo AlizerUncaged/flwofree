@@ -33,107 +33,67 @@ public partial class MainWindow : Window
 
     private Point targetEndpoint;
 
-    // Define possible endpoint collections based on the grid layouts
     private readonly List<int[][]> possibleEndpoints = new List<int[][]>
     {
-        // Layout 1:
-        // 000RG
-        // R0000
-        // 00Y00
-        // 000B0
-        // GBY00
+        // Layout 1 (New winnable layout):
+        // 00000
+        // 0Y0B0
+        // 00B00
+        // 00R0G
+        // RYG00
         new int[][]
         {
-            new int[] { 3, 3, 4, 1 }, // B endpoints
-            new int[] { 0, 4, 4, 0 }, // G endpoints
-            new int[] { 0, 3, 1, 0 }, // R endpoints (row,col)
-            new int[] { 2, 2, 4, 2 }, // Y endpoints
+            new int[] { 1, 3, 2, 2 }, // B endpoints
+            new int[] { 3, 4, 4, 2 }, // G endpoints
+            new int[] { 3, 2, 4, 0 }, // R endpoints
+            new int[] { 1, 1, 4, 1 } // Y endpoints
         },
 
-        // Layout 2:
-// 000RG
-// 0YBG0
-// 00000
-// 0000B
-// 00R0Y
+        // Layout 2
         new int[][]
         {
-            new int[] { 1, 2, 3, 4 }, // B endpoints: (1,2) to (3,4)
-            new int[] { 0, 4, 1, 3 }, // G endpoints: (0,4) to (1,3)
-            new int[] { 0, 3, 4, 2 }, // R endpoints: (0,3) to (4,2)
-            new int[] { 1, 1, 4, 4 } // Y endpoints: (1,1) to (4,4)
-        },
-        // Layout 3:
-        // Y0BRG
-        // 00000
-        // 000G0
-        // 0B00R
-        // 0000Y
-        new int[][]
-        {
-            new int[] { 0, 2, 3, 1 }, // B endpoints
-            new int[] { 0, 4, 2, 3 }, // G endpoints
-            new int[] { 0, 3, 3, 4 }, // R endpoints
-            new int[] { 0, 0, 4, 4 } // Y endpoints
+            new int[] { 2, 1, 4, 4 }, // B endpoints
+            new int[] { 2, 4, 4, 1 }, // G endpoints
+            new int[] { 0, 0, 0, 4 }, // R endpoints
+            new int[] { 2, 2, 3, 4 } // Y endpoints
         },
 
-        // Layout 4:
-        // B00Y0
-        // G0000
-        // Y0GB0
-        // 0R0R0
-        // 00000
+        // Layout 3
         new int[][]
         {
-            new int[] { 0, 0, 2, 3 }, // B endpoints
-            new int[] { 1, 0, 2, 2 }, // G endpoints
-            new int[] { 3, 1, 3, 3 }, // R endpoints
-            new int[] { 0, 3, 2, 0 } // Y endpoints
+            new int[] { 1, 0, 3, 1 }, // B endpoints
+            new int[] { 1, 1, 1, 3 }, // G endpoints
+            new int[] { 2, 0, 3, 3 }, // R endpoints
+            new int[] { 3, 4, 4, 3 } // Y endpoints
         },
 
-        // Layout 5:
-        // 000R0
-        // 0YBG0
-        // 00000
-        // BGR00
-        // 0000G // unwinnable
-        // new int[][]
-        // {
-        //     new int[] { 1, 2, 3, 0 }, // B endpoints
-        //     new int[] { 1, 3, 4, 4 }, // G endpoints
-        //     new int[] { 0, 3, 3, 2 }, // R endpoints
-        //     new int[] { 1, 1, 3, 1 } // Y endpoints
-        // },
-
-        // Layout 6:
-        // 00000
-        // G00R0
-        // BRBY0
-        // 00000
-        // Y000G
+        // Layout 4
         new int[][]
         {
-            new int[] { 2, 0, 2, 1 }, // B endpoints
-            new int[] { 1, 0, 4, 4 }, // G endpoints
-            new int[] { 1, 3, 2, 3 }, // R endpoints
-            new int[] { 2, 2, 4, 0 } // Y endpoints
+            new int[] { 3, 1, 4, 0 }, // B endpoints
+            new int[] { 1, 1, 4, 2 }, // G endpoints
+            new int[] { 1, 2, 3, 3 }, // R endpoints
+            new int[] { 1, 4, 3, 0 } // Y endpoints
         },
 
-        // Layout 7:
-        // BYR00
-        // 00000
-        // 0BG00
-        // 00000
-        // GY00R
+        // Layout 5
         new int[][]
         {
-            new int[] { 0, 0, 2, 1 }, // B endpoints
-            new int[] { 2, 2, 4, 0 }, // G endpoints
-            new int[] { 0, 2, 4, 4 }, // R endpoints
-            new int[] { 0, 1, 4, 1 } // Y endpoints
+            new int[] { 0, 4, 1, 0 }, // B endpoints
+            new int[] { 0, 2, 2, 2 }, // G endpoints
+            new int[] { 0, 0, 3, 2 }, // R endpoints
+            new int[] { 0, 3, 3, 3 } // Y endpoints
+        },
+
+        // Layout 6
+        new int[][]
+        {
+            new int[] { 1, 1, 1, 3 }, // B endpoints
+            new int[] { 2, 3, 3, 0 }, // G endpoints
+            new int[] { 1, 0, 4, 2 }, // R endpoints
+            new int[] { 3, 3, 4, 0 } // Y endpoints
         }
     };
-
 
     private int[][] currentEndpoints;
 

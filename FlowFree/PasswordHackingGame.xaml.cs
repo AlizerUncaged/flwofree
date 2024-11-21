@@ -161,7 +161,7 @@ public partial class PasswordHackingGame : UserControl
     private void PlayJumpscare()
     {
         jumpscareWindow.Visibility = Visibility.Visible;
-        
+
         var player = jumpscareWindow.Content as MediaElement;
 
         player.Volume = 1;
@@ -175,7 +175,7 @@ public partial class PasswordHackingGame : UserControl
         jumpscareWindow.Topmost = true;
         jumpscareWindow.Opacity = 1;
         jumpscareWindow.Show();
-        
+
         player.Play();
     }
 
